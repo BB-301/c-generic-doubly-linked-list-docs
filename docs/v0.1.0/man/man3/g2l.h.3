@@ -1,0 +1,409 @@
+.TH "include/g2l.h" 3 "Sun Jan 21 2024" "Version 0.1.0" "lib<g2l>" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+include/g2l.h
+.SH SYNOPSIS
+.br
+.PP
+\fC#include <stdbool\&.h>\fP
+.br
+\fC#include <sys/types\&.h>\fP
+.br
+
+.SS "Typedefs"
+
+.in +1c
+.ti -1c
+.RI "typedef struct \fBg2l_t\fP \fBg2l_t\fP"
+.br
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBg2l_t\fP * \fBg2l_create\fP (\fBsize_t\fP data_size, \fBbool\fP abort_on_enomem)"
+.br
+.ti -1c
+.RI "\fBvoid\fP \fBg2l_clear\fP (\fBg2l_t\fP *self)"
+.br
+.ti -1c
+.RI "\fBvoid\fP \fBg2l_destroy\fP (\fBg2l_t\fP *self)"
+.br
+.ti -1c
+.RI "\fBsize_t\fP \fBg2l_size\fP (\fBg2l_t\fP const *self)"
+.br
+.ti -1c
+.RI "\fBint\fP \fBg2l_push\fP (\fBg2l_t\fP *self, \fBvoid\fP const *data)"
+.br
+.ti -1c
+.RI "\fBbool\fP \fBg2l_pop\fP (\fBg2l_t\fP *self, \fBvoid\fP *data)"
+.br
+.ti -1c
+.RI "\fBbool\fP \fBg2l_shift\fP (\fBg2l_t\fP *self, \fBvoid\fP *data)"
+.br
+.ti -1c
+.RI "\fBbool\fP \fBg2l_enqueue\fP (\fBg2l_t\fP *self, \fBvoid\fP const *data)"
+.br
+.ti -1c
+.RI "\fBbool\fP \fBg2l_dequeue\fP (\fBg2l_t\fP *self, \fBvoid\fP *data)"
+.br
+.in -1c
+.SH "Typedef Documentation"
+.PP 
+.SS "typedef struct \fBg2l_t\fP \fBg2l_t\fP"
+
+.PP
+An opaque data type used as a container for the \fBgeneric doubly linked list\fP implementation, and which must be instantiated using the \fBg2l_create\fP function\&. 
+.PP
+\fBSee also\fP
+.RS 4
+\fBg2l_create\fP, \fBg2l_destroy\fP 
+.RE
+.PP
+\fBExample:\fP
+.RS 4
+
+.PP
+.nf
+/*
+    Copyright (c) 2024 BB\-301 <fw3dg3@gmail\&.com> [Official repository](https://github\&.com/BB\-301/c\-generic\-doubly\-linked\-list)
+
+    Permission is hereby granted, free of charge, to any person
+    obtaining a copy of this software and associated documentation
+    files (the “Software”), to deal in the Software without restriction,
+    including without limitation the rights to use, copy, modify, merge,
+    publish, distribute, sublicense, and/or sell copies of the Software,
+    and to permit persons to whom the Software is furnished to do so,
+    subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included
+    in all copies or substantial portions of the Software\&.
+
+    THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT\&. IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE\&.
+*/
+
+/*
+    ======================
+    Example: Quick example
+    ======================
+
+    This is a quick "getting started" example used to illustrate
+    the basic structure of a program that uses lib<g2l>\&. This example
+    is featured in the [repository](https://github\&.com/BB\-301/c\-generic\-doubly\-linked\-list)'s
+    README\&.md file\&.
+
+    Here, the `g2l_t` type is used to implement both a stack and a queue\&.
+    The stack's data type is a `char`, while the queue's data type is
+    an application defined structure (named `struct my_data_type`) containing
+    two `int` members; namely, `value_1` and `value_2`\&.
+*/
+
+#include <stdio\&.h>
+#include <stdlib\&.h>
+
+#include "g2l\&.h"
+
+#define NUMBER_OF_ITEMS (4)
+#define DIVIDER "\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-"
+
+struct my_data_type
+{
+    int value_1;
+    int value_2;
+};
+
+static void demo_char_data_type(void);
+static void demo_custom_data_type(void);
+
+int main(void)
+{
+    demo_char_data_type();
+    demo_custom_data_type();
+    fprintf(stdout, "\\n");
+
+    return 0;
+}
+
+static void demo_char_data_type(void)
+{
+    fprintf(stdout, "\\n%s\\nDEMO: stack with 'char' data type\\n%s\\n\\n", DIVIDER, DIVIDER);
+
+    char tmp;
+    g2l_t *stack = g2l_create(sizeof(char), true);
+
+    tmp = 'a';
+    for (int i = 0; i < NUMBER_OF_ITEMS; i++)
+    {
+        g2l_push(stack, &tmp);
+        fprintf(stdout, "pushed: %c [n = %zu]\\n", tmp, g2l_size(stack));
+        tmp += 1;
+    }
+    fprintf(stdout, "\\n");
+
+    while (g2l_size(stack) > 0)
+    {
+        g2l_pop(stack, &tmp);
+        fprintf(stdout, "popped: %c [n = %zu]\\n", tmp, g2l_size(stack));
+    }
+
+    g2l_destroy(stack);
+}
+
+static void demo_custom_data_type(void)
+{
+    fprintf(stdout, "\\n%s\\nDEMO: queue with custom data type\\n%s\\n\\n", DIVIDER, DIVIDER);
+
+    struct my_data_type tmp;
+    g2l_t *queue = g2l_create(sizeof(struct my_data_type), true);
+
+    for (int i = 0; i < NUMBER_OF_ITEMS; i++)
+    {
+        tmp\&.value_1 = i + i;
+        tmp\&.value_2 = i * i;
+        // NOTE: `g2l_enqueue` is simply an alias for `g2l_push`
+        g2l_enqueue(queue, &tmp);
+        fprintf(
+            stdout,
+            "enqueued: struct { \&.value_1 = %i, \&.value_2 = %i } [n = %zu]\\n",
+            tmp\&.value_1, tmp\&.value_2, g2l_size(queue));
+    }
+    fprintf(stdout, "\\n");
+
+    while (g2l_size(queue) > 0)
+    {
+        // NOTE: `g2l_dequeue` is simply an alias for `g2l_shift`
+        g2l_dequeue(queue, &tmp);
+        fprintf(
+            stdout,
+            "dequeued: struct { \&.value_1 = %i, \&.value_2 = %i } [n = %zu]\\n",
+            tmp\&.value_1, tmp\&.value_2, g2l_size(queue));
+    }
+
+    g2l_destroy(queue);
+}
+
+.fi
+.PP
+ 
+.RE
+.PP
+
+.SH "Function Documentation"
+.PP 
+.SS "\fBvoid\fP g2l_clear (\fBg2l_t\fP * self)"
+
+.PP
+A function that can be used to clear (i\&.e\&., empty) a linked list object\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIself\fP A pointer to the \fBg2l_t\fP instance to be cleared\&. 
+.RE
+.PP
+
+.SS "\fBg2l_t\fP * g2l_create (\fBsize_t\fP data_size, \fBbool\fP abort_on_enomem)"
+
+.PP
+The function that must be used to instantiate a new linked list object (i\&.e\&., \fBg2l_t\fP )\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIdata_size\fP The size, in bytes, of the data type that will be stored in the created instance\&. 
+.br
+\fIabort_on_enomem\fP Whether \fBENOMEM\fP errors should result in the process being aborted (\fCtrue\fP) or whether the function should simply return the \fBNULL\fP pointer and let the application deal with the error\&. 
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+\fBg2l_t\fP* A pointer to the created linked list object\&. 
+.RE
+.PP
+\fBNote\fP
+.RS 4
+- If \fCabort_on_enomem\fP is set to \fCfalse\fP and an error occurs, that error will be due to an internal call to \fBmalloc\fP failing, in which case \fBerrno\fP will contain \fBENOMEM\fP , which will have been set by \fBmalloc\fP \&. 
+.PP
+- Setting \fCabort_on_enomem\fP to \fCfalse\fP will also require the application to inspect the value returned by \fBg2l_push\fP (and its \fBg2l_enqueue\fP alias), which function also internally makes use of \fBmalloc\fP , and which could consequently obtain \fBENOMEM\fP \&. 
+.RE
+.PP
+\fBSee also\fP
+.RS 4
+\fBg2l_destroy\fP 
+.RE
+.PP
+
+.SS "\fBbool\fP g2l_dequeue (\fBg2l_t\fP * self, \fBvoid\fP * data)"
+
+.PP
+An alias to \fBg2l_shift\fP , this function can be used to 'dequeue' (i\&.e\&., shift) the list's oldest element (and optionally retrieve the value contained in that element)\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIself\fP A pointer to the \fBg2l_t\fP instance for which to remove the oldest element\&. 
+.br
+\fIdata\fP A pointer to memory into which the list's oldest element's data should be copied before the element is freed\&. The \fBNULL\fP pointer can be passed if the data is not needed by the application\&. 
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+\fBbool\fP A boolean value indicating whether the operation was successful (i\&.e, whether a value was removed)\&. A \fCfalse\fP value simply means that the list was already empty at the moment when the operation was performed, else the value will be \fCtrue\fP\&. 
+.RE
+.PP
+\fBNote\fP
+.RS 4
+- The \fBg2l_dequeue\fP function is an alias for \fBg2l_shift\fP \&. 
+.RE
+.PP
+\fBSee also\fP
+.RS 4
+\fBg2l_shift\fP 
+.RE
+.PP
+
+.SS "\fBvoid\fP g2l_destroy (\fBg2l_t\fP * self)"
+
+.PP
+The function that should be used to destroy a linked list object once it is no longer needed by the application\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIself\fP A pointer to the \fBg2l_t\fP instance to be destroyed\&. 
+.RE
+.PP
+\fBSee also\fP
+.RS 4
+\fBg2l_create\fP 
+.RE
+.PP
+
+.SS "\fBbool\fP g2l_enqueue (\fBg2l_t\fP * self, \fBvoid\fP const * data)"
+
+.PP
+An alias to \fBg2l_push\fP , a function that can be used to 'enqueue' a new element to the linked list object \fCself\fP \&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIself\fP A pointer to the \fBg2l_t\fP instance into which to enqueue (i\&.e\&., push) the new element\&. 
+.br
+\fIdata\fP A pointer to arbitrary memory of size defined when instantiating the object using \fBg2l_create\fP , which is to be copied and stored inside the linked list object \fCself\fP \&. 
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+\fBint\fP An integer value that will be \fC0\fP if the new element was successfully added, else it will be \fBENOMEM\fP \&. 
+.RE
+.PP
+\fBNote\fP
+.RS 4
+- See the documentation for \fBg2l_push\fP for a discussion about the possible returned values\&. 
+.PP
+- The \fBg2l_enqueue\fP function is an alias for \fBg2l_push\fP \&. 
+.RE
+.PP
+\fBSee also\fP
+.RS 4
+\fBg2l_push\fP 
+.RE
+.PP
+
+.SS "\fBbool\fP g2l_pop (\fBg2l_t\fP * self, \fBvoid\fP * data)"
+
+.PP
+The function that must be used to 'pop' the stack (and optionally retrieve the value contained in the list's top-most (i\&.e\&., youngest) element)\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIself\fP A pointer to the \fBg2l_t\fP instance for which to remove the top-most (i\&.e\&., youngest) element\&. 
+.br
+\fIdata\fP A pointer to memory into which the list's top-most element's data should be copied before the element is freed\&. The \fBNULL\fP pointer can be passed if the data is not needed by the application\&. 
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+\fBbool\fP A boolean value indicating whether the operation was successful (i\&.e, whether a value was popped)\&. A \fCfalse\fP value simply means that the list was already empty at the moment when the operation was performed, else the value will be \fCtrue\fP\&. 
+.RE
+.PP
+
+.SS "\fBint\fP g2l_push (\fBg2l_t\fP * self, \fBvoid\fP const * data)"
+
+.PP
+The function that must be used to add a new element to the linked list object \fCself\fP \&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIself\fP A pointer to the \fBg2l_t\fP instance into which to push the new element\&. 
+.br
+\fIdata\fP A pointer to arbitrary memory of size defined when instantiating the object using \fBg2l_create\fP , which is to be copied and stored inside the linked list object \fCself\fP \&. 
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+\fBint\fP An integer value that will be \fC0\fP if the new element was successfully added, else it will be \fBENOMEM\fP \&. 
+.RE
+.PP
+\fBNote\fP
+.RS 4
+- If \fCself\fP has been instantiated with \fBg2l_create\fP 's \fCabort_on_enomem\fP argument set to \fCtrue\fP, then this function will always return \fC0\fP, because possible \fBENOMEM\fP errors obtained using \fBmalloc\fP will result in the process being aborted\&. Therefore, in such cases (i\&.e\&., when setting \fCabort_on_enomem = true\fP), the output of the \fBg2l_push\fP should simply be ignored\&. 
+.PP
+- The \fBg2l_enqueue\fP function is an alias for \fBg2l_push\fP \&. 
+.RE
+.PP
+\fBSee also\fP
+.RS 4
+\fBg2l_enqueue\fP 
+.RE
+.PP
+
+.SS "\fBbool\fP g2l_shift (\fBg2l_t\fP * self, \fBvoid\fP * data)"
+
+.PP
+The function that must be used to 'shift' the list's oldest element (and optionally retrieve the value contained in that element)\&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIself\fP A pointer to the \fBg2l_t\fP instance for which to remove the oldest element\&. 
+.br
+\fIdata\fP A pointer to memory into which the list's oldest element's data should be copied before the element is freed\&. The \fBNULL\fP pointer can be passed if the data is not needed by the application\&. 
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+\fBbool\fP A boolean value indicating whether the operation was successful (i\&.e, whether a value was shifted)\&. A \fCfalse\fP value simply means that the list was already empty at the moment when the operation was performed, else the value will be \fCtrue\fP\&. 
+.RE
+.PP
+\fBNote\fP
+.RS 4
+- The \fBg2l_dequeue\fP function is an alias for \fBg2l_shift\fP \&. 
+.RE
+.PP
+\fBSee also\fP
+.RS 4
+\fBg2l_dequeue\fP 
+.RE
+.PP
+
+.SS "\fBsize_t\fP g2l_size (\fBg2l_t\fP const * self)"
+
+.PP
+A function that can be used to retrieve the current number of items contained in the linked list object \fCself\fP \&. 
+.PP
+\fBParameters\fP
+.RS 4
+\fIself\fP A pointer to the \fBg2l_t\fP object for which to retrieve the number of internal elements\&. 
+.RE
+.PP
+\fBReturns\fP
+.RS 4
+\fBsize_t\fP The number of elements in the \fCself\fP linked list object\&. 
+.RE
+.PP
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for lib<g2l> from the source code\&.
